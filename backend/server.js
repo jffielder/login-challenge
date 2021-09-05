@@ -11,14 +11,13 @@ app.use(express.json()) // use json
 const users = [] // store in DB
 
 
+// api routes
 
+// api handles requesting login details and access to db
 
-// setup
+// on the login 
 
-
-
-
-// routes
+// api/login/
 
 app.get('/api', (req, res) => {
     res.json({
@@ -33,8 +32,8 @@ app.get('/users', (req, res) => {
 app.post('/users', async (req, res) => {
 
     try {
-        const salt = await bcrypt.genSalt()
-        const hashedPass = await bcrypt.hash(req.body.password, salt)
+        // const salt = await bcrypt.genSalt()
+        const hashedPass = await bcrypt.hash(req.body.password, 10)
         const user = {username: req.body.username, password: hashedPass }
         users.push(user)
         res.status(201).send()
@@ -43,24 +42,37 @@ app.post('/users', async (req, res) => {
     }
 })
 
-app.post('/api/posts', verifyToken, (req, res) => {
+app.post('/api/members', verifyToken, (req, res) => {
     // use db
 
     res.json({
-        message: "post created"
+        message: "members page"
     })
 })
 
+
+// main route
 app.post('/api/login', (req, res) => {
 
     // mock user
     // send username and pass in the post body
     // go through auth with database
     // get user back
+
+    // const user = {
+    //     id: 1,
+    //     username: 'john',
+    //     password: 'abcd'
+
+    // }
+
+    // setup database call
+
+    // hash password for call
+
     const user = {
-        id: 1,
-        username: 'john',
-        password: 'abcd'
+        username: req.body.username,
+        password: req.body.password
 
     }
 
@@ -96,11 +108,13 @@ app.post('/users/login', async (req, res) => {
 
 })
 
+// Bearer token
+
 function verifyToken(req, res, next) {
     // get auth header value
     // send token in the header.authtoken
 
-    const bearerHeader= req.hjeaders['authorization'];
+    const bearerHeader= req.headers['authorization'];
 
     // check for token
 

@@ -18,9 +18,12 @@ Content-Type: application/json
 
 {
     "username": "John",
-    "password": "passwor"
+    "password": "password"
 }
 
+###
+
+POST http://localhost:3000/api/members
 
 ###
 
