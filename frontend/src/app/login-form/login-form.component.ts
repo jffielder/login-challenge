@@ -3,9 +3,9 @@ import { Component, OnInit } from '@angular/core';
 @Component({
   selector: 'app-login-form',
   template: `
-    <div>
-      <mat-card>
-        <form>
+    <div fxLayoutAlign="center center" fxFlexFill>
+      <mat-card fxFlex="25">
+        <form fxLayout="column">
           <mat-form-field>
             <input matInput class="form-name" placeholder="Username">
           </mat-form-field>
@@ -13,6 +13,7 @@ import { Component, OnInit } from '@angular/core';
           <mat-form-field>
             <input matInput placeholder="Password" type="password">
           </mat-form-field>
+          <button mat-stroked-button type="submit">Login</button>
         </form>
       </mat-card>
     </div>
