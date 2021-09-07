@@ -4,26 +4,57 @@ const express = require('express')
 const bcrypt = require('bcrypt')
 const app = express()
 const jwt = require('jsonwebtoken')
+const mysql = require('mysql')
 
 
 app.use(express.json()) // use json
 
 const users = [] // store in DB
 
+// DB connection 
+var db = mysql.createConnection({
+    host     : 'localhost',
+    user     : 'root',
+    password : '12345678'
+  });
 
-// api routes
+  db.connect( (err) => {
+      if (err) {
+          throw err;
+      } 
+      console.log('mysql connected')
+  })
 
-// api handles requesting login details and access to db
+  // DB Create
+app.get('/createdb', (req, res) => {
+    let sql = 'CREATE DATABASE nodemysql';
+    db.query(sql, (err, result) => {
+        if(err) throw err;
+        console.log(result);
+        res.send("Database created");
+    })
+}) 
 
-// on the login 
+// Create Table
+// Users ( ID, Username, Password )
 
-// api/login/
+app.get('/createTable', (req,res) => {
+    let sql ='CREATE TABLE users(id int AUTO_INCREMENT, username VARCHAR(255), password VARCHAR(255) PRIMARY KEY id)';
+
+    db.query(sql, (err, result) => {
+        if (err) throw err;
+        console.log(result);
+        res.send("Table Created");
+    })
+})
 
 app.get('/api', (req, res) => {
     res.json({
         message: "Hello"
     })
 })
+
+
 
 app.get('/users', (req, res) => {
     res.json(users)

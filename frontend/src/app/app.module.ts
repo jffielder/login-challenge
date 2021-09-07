@@ -12,6 +12,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
 import { HeaderComponent } from './header/header.component';
+import { PageHeaderComponent } from './page-header/page-header.component';
 
 
 
@@ -19,7 +20,8 @@ import { HeaderComponent } from './header/header.component';
   declarations: [
     AppComponent,
     LoginFormComponent,
-    HeaderComponent
+    HeaderComponent,
+    PageHeaderComponent
   ],
   imports: [
     BrowserModule,
