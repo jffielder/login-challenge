@@ -1,23 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import { User } from '../user';
 
 @Component({
   selector: 'app-login-form',
-  template: `
-    <div fxLayoutAlign="center center" fxFlexFill>
-      <mat-card fxFlex="25">
-        <form fxLayout="column">
-          <mat-form-field>
-            <input matInput class="form-name" placeholder="Username">
-          </mat-form-field>
-        
-          <mat-form-field>
-            <input matInput placeholder="Password" type="password">
-          </mat-form-field>
-          <button mat-stroked-button type="submit">Login</button>
-        </form>
-      </mat-card>
-    </div>
-  `,
+  templateUrl: './login-form.components.html',
   styles: [ `
  
   .form-name {
@@ -26,10 +12,16 @@ import { Component, OnInit } from '@angular/core';
   ` ]
 })
 export class LoginFormComponent implements OnInit {
+  userModel = new User('', '');
 
   constructor() { }
 
   ngOnInit(): void {
+
   }
 
+  onSubmit() {
+    console.log("Submitted");
+  }
 }
+

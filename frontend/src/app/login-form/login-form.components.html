@@ -1,0 +1,19 @@
+<div fxLayoutAlign="center center" fxFlexFill>
+    <mat-card fxFlex="25">
+      <form #loginForm="ngForm" (ngSubmit)="onSubmit()" fxLayout="column">
+        
+        {{ loginForm.value | json }}
+        
+        <mat-form-field>
+          <input [ngModel]="userModel.username" required matInput name="username" class="form-name" placeholder="Username">
+        </mat-form-field>
+      
+        <mat-form-field>
+          <input [ngModel]="userModel.password" required matInput name="password" placeholder="Password" type="password">
+        </mat-form-field>
+
+        <button mat-stroked-button type="submit">Login</button>
+      
+      </form>
+    </mat-card>
+  </div>

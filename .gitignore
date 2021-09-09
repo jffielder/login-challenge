@@ -2,3 +2,5 @@
 backend/node_modules
 backend/package-lock.json
 testing
+reference
+backend/.env
