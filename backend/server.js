@@ -2,48 +2,62 @@
 
 const express = require('express')
 const bcrypt = require('bcrypt')
-const app = express()
 const jwt = require('jsonwebtoken')
 const mysql = require('mysql')
 const dotenv = require('dotenv')
+const cors = require('cors')
 
 dotenv.config({ path: './.env'})
 
-app.use(express.json()) // use json
-
-const users = [] // store in DB
+// Middleware
+const app = express()
+app.use(express.json())
+app.use(cors());        
 
 // DB connection 
 var db = mysql.createConnection({
     host     : process.env.DB_HOST,
     user     : process.env.DB_USER,
-    password : process.env.DB_PASS
+    password : process.env.DB_PASS,
+    database: process.env.DB_DB
   });
 
-  db.connect( (err) => {
-      if (err) {
-          throw err;
-      } 
-      console.log('mysql connected')
-  })
-  
+// --ROUTING
+app.all('', (req,res,next) => {
+    console.log("Accessing api...")
+    db.connect( (err) => {
+        if (err) {
+            console.log("mysql NOT connected")
+            throw err;
+        } 
+        console.log('mysql connected')
+    })
+    next()
+})
 
-
-  // DB Create
 app.get('/createdb', (req, res) => {
-    let sql = 'CREATE DATABASE nodemysql';
+    // DB Create
+    let sql = 'CREATE DATABASE ' + process.env.DB_DB + ";";
     db.query(sql, (err, result) => {
         if(err) throw err;
         console.log(result);
         res.send("Database created");
     })
-}) 
+})
 
-// Create Table
-// Users ( ID, Username, Password )
+app.get('/dropdb', (req, res) => {
+    // DB Drop
+    let sql = 'DROP DATABASE challenge3;';
+    db.query(sql, (err, result) => {
+        if(err) throw err;
+        console.log(result);
+        res.send("Database dropped");
+    })
+})
 
 app.get('/createTable', (req,res) => {
-    let sql ='CREATE TABLE users(id int AUTO_INCREMENT, username VARCHAR(255), password VARCHAR(255) PRIMARY KEY id)';
+    // DB Table Create
+    let sql ='CREATE TABLE users (id INT AUTO_INCREMENT NOT NULL, username VARCHAR(255) NOT NULL, password VARCHAR(255) NOT NULL, PRIMARY KEY (id));';
 
     db.query(sql, (err, result) => {
         if (err) throw err;
@@ -52,33 +66,22 @@ app.get('/createTable', (req,res) => {
     })
 })
 
-app.get('/api', (req, res) => {
-    res.json({
-        message: "Hello"
+app.get('/insertuser',(req, res) => {
+    // DB Add User
+    username = "james"
+    password = "123"
+
+    let sql = "INSERT INTO users VALUE ( NULL, ?, ?)"
+    db.query(sql, [username, password], (err, result) => {
+        if (err) throw err;
+        console.log(result);
+        res.send("user entered");
     })
-})
 
+} )
 
-
-app.get('/users', (req, res) => {
-    res.json(users)
-})
-
-app.post('/users', async (req, res) => {
-
-    try {
-        // const salt = await bcrypt.genSalt()
-        const hashedPass = await bcrypt.hash(req.body.password, 10)
-        const user = {username: req.body.username, password: hashedPass }
-        users.push(user)
-        res.status(201).send()
-    } catch {
-        res.status(500).send()
-    }
-})
-
-app.post('/api/members', verifyToken, (req, res) => {
-    // use db
+app.post('/secure', verifyToken, (req, res) => {
+    // Validate REQ, respond with secret page
 
     res.json({
         message: "members page"
@@ -86,53 +89,25 @@ app.post('/api/members', verifyToken, (req, res) => {
 })
 
 
-// main route
-app.post('/api/login', (req, res) => {
+// DB Attempt Login
+app.post('/api/login', async (req, res) => {
 
-    // mock user
-    // send username and pass in the post body
-    // go through auth with database
-    // get user back
+    var user
 
-    // const user = {
-    //     id: 1,
-    //     username: 'john',
-    //     password: 'abcd'
+    // check username in the database
+    sql = "SELECT * FROM users where username = ?"
+    db.query(sql, [ req.body.username ], (err, result) => {
+        if (err) throw err;
+        user = result
+        console.log(result);
+    })
 
-    // }
-
-    // setup database call
-
-    // hash password for call
-
-    const user = {
-        username: req.body.username,
-        password: req.body.password
-
-    }
-
-    jwt.sign({user: user}, 'secretkey', (err, token) => {
-        res.json({
-            token: token
-        });
-    });
-});
-
-
-app.post('/users/login', async (req, res) => {
-
-    //send login info to database
-
-    // check if users exists
-    const user = users.find(user => user.username === req.body.username )
-    if (user == null) {
+    if (user == null)
         return res.status(400).send('User not found')
-    }
 
-    // check correct password
     try {
         if (await bcrypt.compare(req.body.password, user.password) ) {
-            res.send("sucess")
+            res.send("success")
         } else {
             res.send("Wrong password")
         }
@@ -140,11 +115,10 @@ app.post('/users/login', async (req, res) => {
         
     }
 
-
-})
+    
+});
 
 // Bearer token
-
 function verifyToken(req, res, next) {
     // get auth header value
     // send token in the header.authtoken

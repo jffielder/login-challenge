@@ -7,6 +7,7 @@ import { Component, OnInit } from '@angular/core';
       <app-page-header title="Log In"></app-page-header>
       <nav>
         <a routerLink="/" routerLinkActive="active">Login</a>
+        <a routerLink="/members" routerLinkActive="active">Members</a>
       </nav>
     
     </mat-card>
@@ -22,3 +23,4 @@ export class HeaderComponent implements OnInit {
   }
 
 }
+
