@@ -14,28 +14,49 @@ const app = express()
 app.use(express.json())
 app.use(cors());        
 
-// DB connection 
-var db = mysql.createConnection({
+
+// DB class for making sql query promises
+class Database {
+    constructor( config ) {
+        this.connection = mysql.createConnection( config );
+    }
+
+    query( sql, args ) {
+        return new Promise( ( resolve, reject ) => {
+            this.connection.query( sql, args, (err, rows ) => {
+                if (err) return reject(err);
+                resolve(rows);
+            });
+        });
+    }
+    close() {
+        return new Promise( (resolve, reject ) => {
+            this.connection.end( err => {
+                if(err) return reject(err);
+                resolve();
+            });
+        });
+    }
+}
+
+var db = new Database({
     host     : process.env.DB_HOST,
     user     : process.env.DB_USER,
     password : process.env.DB_PASS,
     database: process.env.DB_DB
   });
 
+
 // --ROUTING
+
 app.all('', (req,res,next) => {
+
     console.log("Accessing api...")
-    db.connect( (err) => {
-        if (err) {
-            console.log("mysql NOT connected")
-            throw err;
-        } 
-        console.log('mysql connected')
-    })
+
     next()
 })
 
-app.get('/createdb', (req, res) => {
+app.get('/api/createdb', (req, res) => {
     // DB Create
     let sql = 'CREATE DATABASE ' + process.env.DB_DB + ";";
     db.query(sql, (err, result) => {
@@ -45,7 +66,7 @@ app.get('/createdb', (req, res) => {
     })
 })
 
-app.get('/dropdb', (req, res) => {
+app.get('/api/dropdb', (req, res) => {
     // DB Drop
     let sql = 'DROP DATABASE challenge3;';
     db.query(sql, (err, result) => {
@@ -57,30 +78,52 @@ app.get('/dropdb', (req, res) => {
 
 app.get('/createTable', (req,res) => {
     // DB Table Create
-    let sql ='CREATE TABLE users (id INT AUTO_INCREMENT NOT NULL, username VARCHAR(255) NOT NULL, password VARCHAR(255) NOT NULL, PRIMARY KEY (id));';
+    let sql ='CREATE TABLE users (' 
+        + 'username VARCHAR(255) NOT NULL,'
+        + 'password VARCHAR(255) NOT NULL,'
+        + 'PRIMARY KEY (username));';
 
-    db.query(sql, (err, result) => {
-        if (err) throw err;
-        console.log(result);
-        res.send("Table Created");
-    })
+    db.query(sql)
+        .then( result => {
+            console.log(result);
+            res.send("Table Created");
+        })
+        .catch( err => {
+            console.log(err);
+            throw err;
+        })
 })
 
-app.get('/insertuser',(req, res) => {
-    // DB Add User
-    username = "james"
-    password = "123"
+app.post('/api/adduser',(req, res) => {
+    // DB Add User, updates password if username exists (for testing)
 
-    let sql = "INSERT INTO users VALUE ( NULL, ?, ?)"
-    db.query(sql, [username, password], (err, result) => {
-        if (err) throw err;
-        console.log(result);
-        res.send("user entered");
-    })
+    const saltRounds = 10;
+    var resultRows;  
+    var sql;
+    
+    // hash password
+    bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
+        
+        // check if user exists already
+        db.query("SELECT * FROM user where username = ?", [req.body.username])
+            .then( rows => { resultRows = rows })
+            .then( rows => {
+                if (resultRows == 0) {
+                    sql = "INSERT INTO users VALUE (?, ?)"
+                    db.query(sql, [req.body.username, hash])       
+                }
+                else {
+                    sql = "UPDATE users SET password = ? WHERE username = ?" 
+                    db.query(sql, [hash, req.body.username ])
+                }
+            })
 
-} )
 
-app.post('/secure', verifyToken, (req, res) => {
+
+    });
+});
+
+app.post('/api/secure', verifyToken, (req, res) => {
     // Validate REQ, respond with secret page
 
     res.json({
@@ -105,6 +148,7 @@ app.post('/api/login', async (req, res) => {
     if (user == null)
         return res.status(400).send('User not found')
 
+    // compare password
     try {
         if (await bcrypt.compare(req.body.password, user.password) ) {
             res.send("success")
