@@ -1,9 +1,10 @@
 // Nodejs Backend
 
+const Database = require ('./databaseModel')
+
 const express = require('express')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const mysql = require('mysql')
 const dotenv = require('dotenv')
 const cors = require('cors')
 
@@ -15,41 +16,17 @@ app.use(express.json())
 app.use(cors());        
 
 
-// DB class for making sql query promises
-class Database {
-    constructor( config ) {
-        this.connection = mysql.createConnection( config );
-    }
-
-    query( sql, args ) {
-        return new Promise( ( resolve, reject ) => {
-            this.connection.query( sql, args, (err, rows ) => {
-                if (err) return reject(err);
-                resolve(rows);
-            });
-        });
-    }
-    close() {
-        return new Promise( (resolve, reject ) => {
-            this.connection.end( err => {
-                if(err) return reject(err);
-                resolve();
-            });
-        });
-    }
-}
-
 var db = new Database({
     host     : process.env.DB_HOST,
     user     : process.env.DB_USER,
     password : process.env.DB_PASS,
-    database: process.env.DB_DB
+    database : process.env.DB_DB
   });
 
 
 // --ROUTING
 
-app.all('', (req,res,next) => {
+app.all('/', (req,res,next) => {
 
     console.log("Accessing api...")
 
@@ -76,7 +53,7 @@ app.get('/api/dropdb', (req, res) => {
     })
 })
 
-app.get('/createTable', (req,res) => {
+app.get('/api/createTable', (req,res) => {
     // DB Table Create
     let sql ='CREATE TABLE users (' 
         + 'username VARCHAR(255) NOT NULL,'
@@ -94,10 +71,19 @@ app.get('/createTable', (req,res) => {
         })
 })
 
+app.get('/api/getusers', (req, res) => {
+    db.query('select * from users;')
+    .then( rows => { res.status(202).json(rows) } )
+    .catch( err => { throw err;} )    
+})
+
 app.post('/api/adduser',(req, res) => {
     // DB Add User, updates password if username exists (for testing)
 
-    const saltRounds = 10;
+});
+
+app.post('/api/register', (req, res) => {
+    const saltRounds = 5;
     var resultRows;  
     var sql;
     
@@ -105,62 +91,31 @@ app.post('/api/adduser',(req, res) => {
     bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
         
         // check if user exists already
-        db.query("SELECT * FROM user where username = ?", [req.body.username])
-            .then( rows => { resultRows = rows })
-            .then( rows => {
-                if (resultRows == 0) {
-                    sql = "INSERT INTO users VALUE (?, ?)"
-                    db.query(sql, [req.body.username, hash])       
-                }
-                else {
-                    sql = "UPDATE users SET password = ? WHERE username = ?" 
-                    db.query(sql, [hash, req.body.username ])
-                }
-            })
+        db.query("SELECT * FROM users where username = ?", [req.body.username])
+        .then( rows => {
+            
+            if (rows == 0) {
+                sql = "INSERT INTO users VALUE (?, ?)"
+                db.query(sql, [req.body.username, hash])       
 
-
-
+            } 
+            else { // username already exists
+                res.sendStatus(409)
+            }
+        })
+        
     });
-});
+    res.status(202).json({message: "add successful"})
 
-app.post('/api/secure', verifyToken, (req, res) => {
-    // Validate REQ, respond with secret page
+})
+
+app.get('/api/secure', verifyToken, (req, res) => {
+    // Validates token and returns secure resource
 
     res.json({
         message: "members page"
     })
 })
-
-
-// DB Attempt Login
-app.post('/api/login', async (req, res) => {
-
-    var user
-
-    // check username in the database
-    sql = "SELECT * FROM users where username = ?"
-    db.query(sql, [ req.body.username ], (err, result) => {
-        if (err) throw err;
-        user = result
-        console.log(result);
-    })
-
-    if (user == null)
-        return res.status(400).send('User not found')
-
-    // compare password
-    try {
-        if (await bcrypt.compare(req.body.password, user.password) ) {
-            res.send("success")
-        } else {
-            res.send("Wrong password")
-        }
-    } catch {
-        
-    }
-
-    
-});
 
 // Bearer token
 function verifyToken(req, res, next) {
@@ -168,17 +123,19 @@ function verifyToken(req, res, next) {
     // send token in the header.authtoken
 
     const bearerHeader= req.headers['authorization'];
-
-    // check for token
+    const token = bearerHeader && bearerHeader.split(' ')[1]
 
     if (typeof bearerHeader !== 'undefined') {
-        
-    } else {
-        res.sendStatus(403)
-    }
+        jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
 
+            if (err) return res.sendStatus(403); // bad token
+            req.user = user
+            next()
+        })
+    } 
+    else 
+        res.sendStatus(401) // no token
+    
 }
 
 app.listen(3000, () => console.log('Starting server on port 3000')) 
-
-

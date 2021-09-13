@@ -13,8 +13,11 @@ import { LoginService } from '../login.service';
   ` ]
 })
 export class LoginFormComponent implements OnInit {
-  userModel = new User('', '', '');
+  userModel = new User('', '');
 
+  // tokenservice
+  //tokenstorage.savetoken
+  //saverefresh
   constructor(private _loginService: LoginService) { }
 
   ngOnInit(): void {
@@ -26,7 +29,8 @@ export class LoginFormComponent implements OnInit {
     
     this._loginService.login(this.userModel)
     .subscribe(
-      data => console.log('Success', data),
+      data => {
+        console.log('Success', data)},
       error => console.log('Error', error)
     )
   }

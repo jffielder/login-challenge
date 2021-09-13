@@ -1,35 +1,44 @@
-GET http://localhost:3000/users
+GET http://localhost:3000/api/createTable
 
 ###
 
-POST http://localhost:3000/users
+GET http://localhost:3000/api/getusers
+
+###
+
+GET http://localhost:3000/api/secure
+
+###
+
+GET http://localhost:3000/api/secure
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkphbWVzIiwiaWF0IjoxNjMxNDY4MjQ0fQ.uMiKmK-0fM6V8XDVVp7kLMT1Jti_XMOxf_qODXisb0Q
+
+###
+
+POST http://localhost:3000/api/adduser
 Content-Type: application/json
 
 {
     "username": "John",
     "password": "password"
-}
 
+}
 
 ###
 
-POST http://localhost:3000/users/login
+POST http://localhost:3001/api/login
 Content-Type: application/json
 
 {
-    "username": "John",
-    "password": "password"
+    "username": "James",
+    "password": "1234"
 }
 
 ###
 
-POST http://localhost:3000/api/members
+POST http://localhost:3001/api/token 
+Content-Type: application/json
 
-###
-
-GET http://localhost:3000/api/login
-
-###
-
-
-POST http://localhost:3000/api/login
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkphbWVzIiwiaWF0IjoxNjMxNTQyNzY5fQ.09S5eNj88Su63_HfGJplSGYnQTwMSkcpX57GcDVlLLY"
+}
