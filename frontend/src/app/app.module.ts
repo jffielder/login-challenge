@@ -15,10 +15,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatInputModule } from '@angular/material/input';
 import { MatCardModule } from '@angular/material/card';
 
+
 import { HeaderComponent } from './header/header.component';
 import { PageHeaderComponent } from './page-header/page-header.component';
 import { MembersComponent } from './members/members.component';
-import { AuthModule } from './auth/auth.module';
+import { RegisterComponent } from './register/register.component';
 
 
 
@@ -28,7 +29,8 @@ import { AuthModule } from './auth/auth.module';
     routingComponents,
     HeaderComponent,
     PageHeaderComponent,
-    MembersComponent
+    MembersComponent,
+    RegisterComponent
   ],
   imports: [
     BrowserModule,
@@ -40,8 +42,7 @@ import { AuthModule } from './auth/auth.module';
     MatButtonModule,
     MatInputModule,
     MatCardModule,
-    HttpClientModule,
-    AuthModule
+    HttpClientModule
   ],
   providers: [],
   bootstrap: [AppComponent]

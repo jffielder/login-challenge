@@ -2,21 +2,27 @@
     <mat-card fxFlex="25">
       <form #loginForm="ngForm" (ngSubmit)="onSubmit()" fxLayout="column" novalidate>
         
-        <div *ngIf="displayEmsg">Failed to login</div>
+        {{ loginForm.value | json }}
         
         <mat-form-field>
           <input matInput name="username" class="form-name" placeholder="Username"
             required
-            [(ngModel)]="userModel.username">
+            [(ngModel)]="user.username">
         </mat-form-field>
       
         <mat-form-field>
           <input matInput name="password" placeholder="Password" type="password"
             required
-            [(ngModel)]="userModel.password">
+            [(ngModel)]="user.password">
+        </mat-form-field>
+        
+        <mat-form-field>
+          <input matInput name="passwordConfirm" placeholder="Confirm Password" type="password"
+            required
+            [(ngModel)]="user.passwordConfirm">
         </mat-form-field>
 
-        <button [disabled]="loginForm.form.invalid" mat-stroked-button type="submit">Login</button>
+        <button [disabled]="loginForm.form.invalid" mat-stroked-button type="submit">Register</button>
       
       </form>
     </mat-card>

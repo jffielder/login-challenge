@@ -1,11 +1,11 @@
 // Nodejs Backend
-const Database = require('./databaseModel')
 
 const express = require('express')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const dotenv = require('dotenv')
 const cors = require('cors')
+const Database = require('./databaseModel')
 
 dotenv.config({ path: './.env'})
 
@@ -44,10 +44,12 @@ app.get('/api/createTable', (req,res) => {
 // -- Authentication System
 
 app.delete('/api/logout', (req, res) => {
+    console.log("deleting");
     const sql = "DELETE FROM refreshTokens WHERE refreshToken = ?"
     db.query(sql, req.body.token )
     .then( rows => {
-
+        console.log("deleted token")
+        res.sendStatus(200);
     })
 })
 
@@ -125,6 +127,6 @@ function genAccessToken(user) {
     return jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: '20s' });
 }
 
-app.listen(3001, () => console.log('Starting server on port 3001')) 
+app.listen(3001, () => console.log('Starting authServer on port 3001')) 
 
 

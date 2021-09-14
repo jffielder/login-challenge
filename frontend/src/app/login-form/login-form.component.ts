@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { User } from '../user';
-import { LoginService } from '../login.service';
+import { LoginService } from '../services/login.service';
+import { TokenStorageService } from '../services/token-storage.service';
 
 @Component({
   selector: 'app-login-form',
@@ -14,11 +15,15 @@ import { LoginService } from '../login.service';
 })
 export class LoginFormComponent implements OnInit {
   userModel = new User('', '');
-
+  loggedIn = false;
+  displayEmsg = false;
   // tokenservice
   //tokenstorage.savetoken
   //saverefresh
-  constructor(private _loginService: LoginService) { }
+  constructor(
+    private _loginService: LoginService, 
+    private _tokenStorageService: TokenStorageService
+    ) { }
 
   ngOnInit(): void {
 
@@ -29,9 +34,18 @@ export class LoginFormComponent implements OnInit {
     
     this._loginService.login(this.userModel)
     .subscribe(
-      data => {
-        console.log('Success', data)},
-      error => console.log('Error', error)
+      (data: any) => {
+        console.log('Success', data)
+        this.loggedIn = true
+        this.displayEmsg = false;
+        this._tokenStorageService.saveToken( data["accessToken"] )
+        this._tokenStorageService.saveRefreshToken( data["refreshToken"] )
+      
+      },
+      (error: any) => {
+        this.displayEmsg = true;
+        console.log('Error', error)
+      }
     )
   }
 }

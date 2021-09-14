@@ -7,7 +7,7 @@ import { Component, Input, OnInit } from '@angular/core';
       {{title}}
     </div>
   `,
-  styles: [
+  styles: [ 'div { font-size: large; }'
   ]
 })
 export class PageHeaderComponent implements OnInit {

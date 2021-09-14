@@ -1,11 +1,16 @@
 import { NgModule } from '@angular/core';
-import { RouterModule, Routes } from '@angular/router';
+import { RouterModule, Routes, CanActivate } from '@angular/router';
 import { LoginFormComponent } from './login-form/login-form.component';
 import { MembersComponent } from './members/members.component';
+import { RegisterComponent } from './register/register.component';
 
 const routes: Routes = [
   {path: '', component: LoginFormComponent},
-  {path: 'members', component: MembersComponent}
+  {path: 'members', component: MembersComponent},
+  {path: 'register', component: RegisterComponent},
+  
+  // otherwise route to home
+  { path: '**', redirectTo: '' }
 ];
 
 @NgModule({
