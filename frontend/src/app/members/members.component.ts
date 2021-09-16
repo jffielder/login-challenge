@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { LoginService } from '../services/login.service';
@@ -10,7 +10,7 @@ import { TokenStorageService } from '../services/token-storage.service';
     <mat-card>
       <mat-card-title>Secure Page</mat-card-title>
       <a mat-flat-button (click)="logout()">Logout</a>
-      {{data}}
+      {{ data | json }}
     </mat-card>
   `,
   styles: [ 
@@ -34,10 +34,26 @@ export class MembersComponent implements OnInit {
     
     // attach 'authorization token' header 
     const token = this._tokenService.getToken()
-    this._http.get(this._url + 'secure')
-    .subscribe( data => {this.data = data}, (error) => {console.log(error) }
+    const headers = new HttpHeaders().set('Authorization', token || "") // { headers }
+
+
+    this._http.get(this._url + 'secure', { headers })
+    .subscribe( 
+      (data) => {this.data = data; console.log(data)}, 
+      (error) => {
+        console.log("changed ", error) 
+        // accessToken expired
+        if (this._loginService.isLoggedIn() ) {
+          console.log("got new token")
+        } else {
+          console.log("did not get new token")
+          this._router.navigate(['/']);
+        }
+      }
     )
   }
+
+
 
   logout() {
     console.log("log out");

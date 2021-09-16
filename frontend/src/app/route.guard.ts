@@ -35,8 +35,13 @@ export class RouteGuard implements CanActivate {
         return true;
 
       }
+
+      // not logged in, check if token exists
+        // token exists, check if token has exp
+          // it exp, send refresh token /api/token
+
       
-      // if not logged in, route to login
+      // if not logged in, 
       this.router.navigate(['/'], {queryParams: {returnUrl: state.url}});
       return false;   
   }

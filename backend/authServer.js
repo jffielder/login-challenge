@@ -43,7 +43,7 @@ app.post('/api/token', (req, res) => {
 
     if (refreshToken == null) return res.sendStatus(401)
 
-    const sql = "SELECT * FROM tokens where refreshToken = ?";
+    const sql = "SELECT * FROM refreshTokens where refreshToken = ?";
 
     // check db for refreshtoken
     db.query( sql, refreshToken )
@@ -52,11 +52,17 @@ app.post('/api/token', (req, res) => {
             return res.sendStatus(403)
         } else {
             jwt.verify(refreshToken, process.env.TOKEN_SECRET, (err, user) => {
-                if (err) return res.sendStatus(403)
-                const accessToken = generateAccessToken({ name: user.name })
-                res.json({ accessToken })
+                if (err) {
+                    return res.sendStatus(403)
+                } else {
+                    const accessToken = genAccessToken({ name: user.name })
+                    res.json({ "accessToken": accessToken })
+                }
             })
         }
+    })
+    .catch( (err ) => {
+        console.log(err);
     })
 
 })
@@ -108,7 +114,7 @@ app.post('/api/login', async (req, res) => {
 // Bearer token
 function genAccessToken(user) {
     // return access token for user
-    return jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: '20s' });
+    return jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: '10s' });
 }
 
 app.listen(3001, () => console.log('Starting authServer on port 3001')) 

@@ -72,7 +72,7 @@ app.post('/api/register', (req, res) => {
 app.get('/api/secure', verifyToken, (req, res) => {
     // Validates token and returns all users from db
 
-    let sql = "SELECT * FROM users"
+    let sql = "SELECT username FROM users"
 
     db.query(sql)
     .then(
@@ -92,10 +92,10 @@ function verifyToken(req, res, next) {
     // get auth header value
     // send token in the header.authtoken
 
-    const bearerHeader= req.headers['authorization'];
-    const token = bearerHeader && bearerHeader.split(' ')[1]
+    const token= req.headers['authorization'];
+    // const token = bearerHeader && bearerHeader.split(' ')[1]
 
-    if (typeof bearerHeader !== 'undefined') {
+    if (typeof token !== 'undefined') {
         jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
 
             if (err) return res.sendStatus(403); // bad token

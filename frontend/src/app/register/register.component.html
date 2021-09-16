@@ -2,8 +2,6 @@
     <mat-card fxFlex="25">
       <form #loginForm="ngForm" (ngSubmit)="onSubmit()" fxLayout="column" novalidate>
         
-        {{ loginForm.value | json }}
-        
         <mat-form-field>
           <input matInput name="username" class="form-name" placeholder="Username"
             required
