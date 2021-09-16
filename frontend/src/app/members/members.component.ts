@@ -9,8 +9,14 @@ import { TokenStorageService } from '../services/token-storage.service';
   template: `
     <mat-card>
       <mat-card-title>Secure Page</mat-card-title>
-      <a mat-flat-button (click)="logout()">Logout</a>
-      {{ data | json }}
+      <a mat-flat-button color="primary" (click)="logout()">Logout</a>
+    </mat-card>
+    <mat-card>  
+    
+    <h2>Sever Data</h2>
+    <div *ngFor="let item of data | keyvalue">
+      <h3>{{item.value | json}}</h3>
+    </div>
     </mat-card>
   `,
   styles: [ 
@@ -36,26 +42,25 @@ export class MembersComponent implements OnInit {
     const token = this._tokenService.getToken()
     const headers = new HttpHeaders().set('Authorization', token || "") // { headers }
 
+    // try to check/refresh token before sending token in header
+    if (!this._loginService.isLoggedIn() ) {
+      this._router.navigate(['/']);
+    }
 
+    // get secure data from server
     this._http.get(this._url + 'secure', { headers })
     .subscribe( 
       (data) => {this.data = data; console.log(data)}, 
       (error) => {
-        console.log("changed ", error) 
+        console.log(error) 
         // accessToken expired
-        if (this._loginService.isLoggedIn() ) {
-          console.log("got new token")
-        } else {
-          console.log("did not get new token")
-          this._router.navigate(['/']);
-        }
+        
       }
     )
   }
 
-
-
   logout() {
+    // send delete call to auth server that removes refresh token from database
     console.log("log out");
     this._loginService.logoff(this._tokenService.getRefreshToken())
     .subscribe(
@@ -69,7 +74,5 @@ export class MembersComponent implements OnInit {
       }
     )
     // route to logout
-
   }
-
 }

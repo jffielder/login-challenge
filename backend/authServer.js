@@ -70,7 +70,7 @@ app.post('/api/token', (req, res) => {
 app.post('/api/login', async (req, res) => {
     // DB Attempt Login
 
-    console.log("Attempting to login: " + req.body.username);
+    console.log("Attempting to Login: " + req.body.username);
 
     const username = req.body.username 
     const user = { username: username}
@@ -85,7 +85,7 @@ app.post('/api/login', async (req, res) => {
         else {          // compare password
             try {
                 if (bcrypt.compareSync(req.body.password, rows[0].password) ) {
-
+                    console.log("Login Successful");
                     // gen tokens
                     const accessToken = genAccessToken(user);
                     const refreshToken = jwt.sign(user, process.env.TOKEN_SECRET)

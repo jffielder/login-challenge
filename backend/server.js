@@ -82,9 +82,6 @@ app.get('/api/secure', verifyToken, (req, res) => {
         err => { throw err}
     )
 
-    // res.json({
-    //     message: "members page"
-    // })
 })
 
 // Bearer token

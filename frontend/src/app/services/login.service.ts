@@ -21,9 +21,6 @@ export class LoginService {
   logoff(token: any) {
     // Send token to authserver to be deleted from db
     this.loggedIn = false;
-
-    // ERROR: not getting anything in body:
-
     const headers = new HttpHeaders().set('token', token) // { headers }
     return this._http.delete(this._url + 'logout', { headers })
   }
@@ -43,39 +40,30 @@ export class LoginService {
   }
 
   isLoggedIn(): boolean {
-    
-    // send token
+    // checks if logged in by checking refreshToken 
+    // makes call to token api which returns a accesstoken
     const token = this._token.getRefreshToken();
     let newToken = ""
-    this.token(token).subscribe( (data: any) => {
+    
+    this.token(token).subscribe( 
+    (data: any) => {
+      // valid token data returned
       newToken = data.accessToken 
+
       this.setLoggedIn(true);
       this._token.saveToken(newToken)
+      
       return true;
-      },
-      (error: any) => {
-        console.log("refresh not found", error);
-        this.loggedIn = false;
-        return false;
-      }
-
-    )
-
-
+    },
+    (error: any) => {
+      // no refreshToken, user not logged in
+      console.log(error);
+      
+      this.loggedIn = false;
+      
+      return false;
+    })
     
-
-    // if receive accessToken, then islogged = true
-
-    // if not, then false
-    
-    // if token exp send refresh
-    // if refresh fails not logged in
-    
-    // const expires = new Date(jwtToken.exp * 1000);
-    // const timeout = expires.getTime() - Date.now() - (60 * 1000);
-
-
-
     return this.loggedIn;
   }
 }

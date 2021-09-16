@@ -13,8 +13,6 @@ export class RouteGuard implements CanActivate {
               private router: Router) {
 
   }
-  
-  
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot,
@@ -22,24 +20,9 @@ export class RouteGuard implements CanActivate {
 
       
       // check if logged in
-      if (this._loginService.isLoggedIn()) {
-        
-        // verify token
-
-        // if token is not timed out
-          // return true
-        // if token is timed out
-          // try to refresh token
-        // if refresh succeeds
-          // return true 
+      if (this._loginService.isLoggedIn())
         return true;
-
-      }
-
-      // not logged in, check if token exists
-        // token exists, check if token has exp
-          // it exp, send refresh token /api/token
-
+      
       
       // if not logged in, 
       this.router.navigate(['/'], {queryParams: {returnUrl: state.url}});
