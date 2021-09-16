@@ -6,7 +6,6 @@ const jwt = require('jsonwebtoken')
 const dotenv = require('dotenv')
 const cors = require('cors')
 const Database = require('./databaseModel')
-
 dotenv.config({ path: './.env'})
 
 // Middleware
@@ -23,33 +22,18 @@ var db = new Database( {
 } )
 
 
-app.get('/api/createTable', (req,res) => {
-    // Create mysql table to store refreshtokens
-    let sql ='CREATE TABLE tokens (' 
-        + 'id INT AUTO_INCREMENT NOT NULL,'
-        + 'refreshToken VARCHAR(255) NOT NULL,'
-        + 'PRIMARY KEY (id));';
-
-    db.query(sql)
-    .then( result => {
-        console.log(result);
-        res.send("Table Created");
-    })
-    .catch( err => {
-        console.log(err);
-        throw err;
-    })
-})
-
 // -- Authentication System
 
 app.delete('/api/logout', (req, res) => {
-    console.log("deleting");
+    // deletes token from db
+    console.log("logging out");
     const sql = "DELETE FROM refreshTokens WHERE refreshToken = ?"
-    db.query(sql, req.body.token )
+    
+    // delete token sql query
+    db.query(sql, req.headers.token )
     .then( rows => {
         console.log("deleted token")
-        res.sendStatus(200);
+        res.status(200).json("deleted token");
     })
 })
 
@@ -90,7 +74,7 @@ app.post('/api/login', async (req, res) => {
     // search users table for user
     db.query(sql, [ req.body.username ])
     .then( rows => {
-        if ( !rows )    // User not found
+        if ( rows.length < 1)    // User not found
             res.status(401).send("Login failed. Username not found")
         else {          // compare password
             try {

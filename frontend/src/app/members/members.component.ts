@@ -1,10 +1,16 @@
+import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
+import { LoginService } from '../services/login.service';
+import { TokenStorageService } from '../services/token-storage.service';
 
 @Component({
   selector: 'app-members',
   template: `
     <mat-card>
       <mat-card-title>Secure Page</mat-card-title>
+      <a mat-flat-button (click)="logout()">Logout</a>
+      {{data}}
     </mat-card>
   `,
   styles: [ 
@@ -13,22 +19,41 @@ import { Component, OnInit } from '@angular/core';
   ]
 })
 export class MembersComponent implements OnInit {
+  
+  _url = 'http://localhost:3000/api/'
+  data = {}
 
-  constructor() { }
+  constructor(private _tokenService: TokenStorageService,
+              private _loginService: LoginService,
+              private _router: Router,
+              private _http: HttpClient) { }
 
   ngOnInit(): void {
+    
+    // gets secure info from server
+    
+    // attach 'authorization token' header 
+    const token = this._tokenService.getToken()
+    this._http.get(this._url + 'secure')
+    .subscribe( data => {this.data = data}, (error) => {console.log(error) }
+    )
+  }
+
+  logout() {
+    console.log("log out");
+    this._loginService.logoff(this._tokenService.getRefreshToken())
+    .subscribe(
+      (_data: any) => {
+        this._tokenService.signOut();
+        this._router.navigate(['/']);
+
+      },
+      (error: any) => {
+        console.log(error); 
+      }
+    )
+    // route to logout
+
   }
 
 }
-
-/*
-todo:
-protect secure page routing with an authgaurd 
-request protected resources from secure page to display (users)
-move logout button to secure page
-route to secure page after loging on
-route to login page after failing to auth for secure page
-make refreshtokens useful
-make logout button make api/delete call
-
-*/

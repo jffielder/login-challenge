@@ -10,9 +10,7 @@ import { TokenStorageService } from '../services/token-storage.service';
       <nav>
         <a mat-flat-button routerLink="/" routerLinkActive="active">Login</a>
         <a mat-flat-button routerLink="/register" routerLinkActive="active">Register</a>
-        <a mat-flat-button routerLink="/members" routerLinkActive="active">Secure Page</a>
-        <a mat-flat-button (click)="logout()">Logout</a>
-      
+        <a mat-flat-button routerLink="/members" routerLinkActive="active">Secure Page</a>      
       </nav>
     
     </mat-card>
@@ -23,16 +21,9 @@ import { TokenStorageService } from '../services/token-storage.service';
 })
 export class HeaderComponent implements OnInit {
 
-  constructor(private _loginService: LoginService, private _tokenService: TokenStorageService) { }
+  constructor() { }
 
   ngOnInit(): void {
-  }
-
-  logout() {
-    console.log("log out");
-
-    this._loginService.logoff(this._tokenService.getRefreshToken);
-    this._tokenService.signOut();
   }
 
 }

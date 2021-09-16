@@ -24,97 +24,67 @@ var db = new Database({
   });
 
 
+const dbRoutes = require('./routes/databaseRoutes');
+app.use("/api/db/", dbRoutes);
+  
 // --ROUTING
 
 app.all('/', (req,res,next) => {
-
     console.log("Accessing api...")
-
     next()
 })
 
-app.get('/api/createdb', (req, res) => {
-    // DB Create
-    let sql = 'CREATE DATABASE ' + process.env.DB_DB + ";";
-    db.query(sql, (err, result) => {
-        if(err) throw err;
-        console.log(result);
-        res.send("Database created");
-    })
-})
-
-app.get('/api/dropdb', (req, res) => {
-    // DB Drop
-    let sql = 'DROP DATABASE challenge3;';
-    db.query(sql, (err, result) => {
-        if(err) throw err;
-        console.log(result);
-        res.send("Database dropped");
-    })
-})
-
-app.get('/api/createTable', (req,res) => {
-    // DB Table Create
-    let sql ='CREATE TABLE users (' 
-        + 'username VARCHAR(255) NOT NULL,'
-        + 'password VARCHAR(255) NOT NULL,'
-        + 'PRIMARY KEY (username));';
-
-    db.query(sql)
-        .then( result => {
-            console.log(result);
-            res.send("Table Created");
-        })
-        .catch( err => {
-            console.log(err);
-            throw err;
-        })
-})
-
 app.get('/api/getusers', (req, res) => {
+    // returns all users in db
+
     db.query('select * from users;')
     .then( rows => { res.status(202).json(rows) } )
     .catch( err => { throw err;} )    
 })
 
-app.post('/api/adduser',(req, res) => {
-    // DB Add User, updates password if username exists (for testing)
-
-});
-
 app.post('/api/register', (req, res) => {
+    // Adds user to db
     const saltRounds = 5;
     var resultRows;  
     var sql;
     
-    // hash password
+    // Hash password before storing
     bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
         
         // check if user exists already
         db.query("SELECT * FROM users where username = ?", [req.body.username])
         .then( rows => {
-            
-            if (rows == 0) {
+
+            if (rows == 0) { // new user
                 sql = "INSERT INTO users VALUE (?, ?)"
                 db.query(sql, [req.body.username, hash])       
-
+                res.status(202).json({message: "add successful"})
+                
             } 
             else { // username already exists
                 res.sendStatus(409)
             }
         })
-        
     });
-    res.status(202).json({message: "add successful"})
 
 })
 
 app.get('/api/secure', verifyToken, (req, res) => {
-    // Validates token and returns secure resource
+    // Validates token and returns all users from db
 
-    res.json({
-        message: "members page"
-    })
+    let sql = "SELECT * FROM users"
+
+    db.query(sql)
+    .then(
+        rows => res.send(rows)
+    )
+    .catch(
+        err => { throw err}
+    )
+
+    // res.json({
+    //     message: "members page"
+    // })
 })
 
 // Bearer token

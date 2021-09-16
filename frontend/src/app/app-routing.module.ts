@@ -3,10 +3,11 @@ import { RouterModule, Routes, CanActivate } from '@angular/router';
 import { LoginFormComponent } from './login-form/login-form.component';
 import { MembersComponent } from './members/members.component';
 import { RegisterComponent } from './register/register.component';
+import { RouteGuard } from './route.guard'
 
 const routes: Routes = [
   {path: '', component: LoginFormComponent},
-  {path: 'members', component: MembersComponent},
+  {path: 'members', component: MembersComponent, canActivate: [RouteGuard]},
   {path: 'register', component: RegisterComponent},
   
   // otherwise route to home

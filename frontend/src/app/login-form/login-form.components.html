@@ -2,7 +2,7 @@
     <mat-card fxFlex="25">
       <form #loginForm="ngForm" (ngSubmit)="onSubmit()" fxLayout="column" novalidate>
         
-        <div *ngIf="displayEmsg">Failed to login</div>
+        <div *ngIf="displayEmsg">{{displayEmsg}}</div>
         
         <mat-form-field>
           <input matInput name="username" class="form-name" placeholder="Username"

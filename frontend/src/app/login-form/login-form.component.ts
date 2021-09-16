@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { User } from '../user';
 import { LoginService } from '../services/login.service';
 import { TokenStorageService } from '../services/token-storage.service';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-login-form',
@@ -16,17 +17,25 @@ import { TokenStorageService } from '../services/token-storage.service';
 export class LoginFormComponent implements OnInit {
   userModel = new User('', '');
   loggedIn = false;
-  displayEmsg = false;
+  displayEmsg = '';
   // tokenservice
   //tokenstorage.savetoken
   //saverefresh
   constructor(
     private _loginService: LoginService, 
-    private _tokenStorageService: TokenStorageService
+    private _tokenStorageService: TokenStorageService,
+    private _route: ActivatedRoute,
+    private _router: Router
     ) { }
 
   ngOnInit(): void {
-
+    this._route.queryParams
+    .subscribe( params => {
+      if (params.returnUrl)
+        this.displayEmsg = "Please Login"
+      else 
+        this.displayEmsg = ""
+    })
   }
 
   onSubmit() {
@@ -36,14 +45,17 @@ export class LoginFormComponent implements OnInit {
     .subscribe(
       (data: any) => {
         console.log('Success', data)
+        this._loginService.setLoggedIn(true);
         this.loggedIn = true
-        this.displayEmsg = false;
+        this.displayEmsg = '';
         this._tokenStorageService.saveToken( data["accessToken"] )
         this._tokenStorageService.saveRefreshToken( data["refreshToken"] )
+        this._router.navigate(['/members']);
       
       },
       (error: any) => {
-        this.displayEmsg = true;
+        this._loginService.setLoggedIn(false);
+        this.displayEmsg = "failed to login";
         console.log('Error', error)
       }
     )
