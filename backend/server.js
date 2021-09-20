@@ -10,11 +10,13 @@ const cors = require('cors')
 
 dotenv.config({ path: './.env'})
 
-// Middleware
 const app = express()
 app.use(express.json())
 app.use(cors());        
 
+// import routes for db handling via API
+const dbRoutes = require('./routes/databaseRoutes');
+app.use("/api/db/", dbRoutes);
 
 var db = new Database({
     host     : process.env.DB_HOST,
@@ -22,12 +24,9 @@ var db = new Database({
     password : process.env.DB_PASS,
     database : process.env.DB_DB
   });
-
-
-const dbRoutes = require('./routes/databaseRoutes');
-app.use("/api/db/", dbRoutes);
   
-// --ROUTING
+
+  // --ROUTING
 
 app.all('/', (req,res,next) => {
     console.log("Accessing api...")
@@ -43,34 +42,31 @@ app.get('/api/getusers', (req, res) => {
 })
 
 app.post('/api/register', (req, res) => {
-    // Adds user to db
+    // Adds user to users table db
     const saltRounds = 5;
-    var resultRows;  
-    var sql;
+    var sql = "SELECT * FROM users where username = ?"
     
     // Hash password before storing
     bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
         
         // check if user exists already
-        db.query("SELECT * FROM users where username = ?", [req.body.username])
+        db.query( sql, [req.body.username])
         .then( rows => {
 
             if (rows == 0) { // new user
                 sql = "INSERT INTO users VALUE (?, ?)"
                 db.query(sql, [req.body.username, hash])       
-                res.status(202).json({message: "add successful"})
-                
+                res.status(202).json({message: "add successful"}) 
             } 
             else { // username already exists
                 res.sendStatus(409)
             }
         })
     });
-
 })
 
 app.get('/api/secure', verifyToken, (req, res) => {
-    // Validates token and returns all users from db
+    // Verify accessToken and returns all usernames from db
 
     let sql = "SELECT username FROM users"
 
@@ -81,15 +77,12 @@ app.get('/api/secure', verifyToken, (req, res) => {
     .catch(
         err => { throw err}
     )
-
 })
 
-// Bearer token
 function verifyToken(req, res, next) {
-    // get auth header value
-    // send token in the header.authtoken
+    // uses JWT verify to check if the accessToken is valid
 
-    const token= req.headers['authorization'];
+    const token = req.headers['authorization'];
     // const token = bearerHeader && bearerHeader.split(' ')[1]
 
     if (typeof token !== 'undefined') {

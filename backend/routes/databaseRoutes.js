@@ -1,3 +1,5 @@
+// create DB via api
+
 const express = require("express");
 const Database = require ('../databaseModel')
 

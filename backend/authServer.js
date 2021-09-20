@@ -29,16 +29,18 @@ app.delete('/api/logout', (req, res) => {
     console.log("logging out");
     const sql = "DELETE FROM refreshTokens WHERE refreshToken = ?"
     
-    // delete token sql query
     db.query(sql, req.headers.token )
     .then( rows => {
         console.log("deleted token")
         res.status(200).json("deleted token");
     })
+    .catch( error => {
+        console.log("Error deleting token: ", error);
+    })
 })
 
 app.post('/api/token', (req, res) => {
-    // gives token if refreshtoken is valid
+    // returns new accessToken if given valid refreshToken
     const refreshToken = req.body.token;
 
     if (refreshToken == null) return res.sendStatus(401)
@@ -48,7 +50,7 @@ app.post('/api/token', (req, res) => {
     // check db for refreshtoken
     db.query( sql, refreshToken )
     .then( rows => {
-        if ( !rows) {
+        if ( !rows ) {
             return res.sendStatus(403)
         } else {
             jwt.verify(refreshToken, process.env.TOKEN_SECRET, (err, user) => {
@@ -68,7 +70,7 @@ app.post('/api/token', (req, res) => {
 })
 
 app.post('/api/login', async (req, res) => {
-    // DB Attempt Login
+    // returns tokens given valid username and password
 
     console.log("Attempting to Login: " + req.body.username);
 
@@ -80,12 +82,16 @@ app.post('/api/login', async (req, res) => {
     // search users table for user
     db.query(sql, [ req.body.username ])
     .then( rows => {
-        if ( rows.length < 1)    // User not found
+
+        // User not found
+        if ( rows.length < 1)
             res.status(401).send("Login failed. Username not found")
-        else {          // compare password
+        
+        //  Compare found user's password with bcrypt
+        else {
             try {
                 if (bcrypt.compareSync(req.body.password, rows[0].password) ) {
-                    console.log("Login Successful");
+                    
                     // gen tokens
                     const accessToken = genAccessToken(user);
                     const refreshToken = jwt.sign(user, process.env.TOKEN_SECRET)
@@ -100,13 +106,12 @@ app.post('/api/login', async (req, res) => {
                         refreshToken: refreshToken
                     });
 
-                } else {
-                    res.status(401).send("Wrong password");
-                }
+                } 
+                else res.status(401).send("Wrong password");
+                
             } catch (err) {
                 throw err;
             }
-
         }
     }) 
 });
@@ -114,7 +119,7 @@ app.post('/api/login', async (req, res) => {
 // Bearer token
 function genAccessToken(user) {
     // return access token for user
-    return jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: '10s' });
+    return jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: process.env.TOKEN_LIFE });
 }
 
 app.listen(3001, () => console.log('Starting authServer on port 3001')) 

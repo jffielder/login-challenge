@@ -36,35 +36,42 @@ export class MembersComponent implements OnInit {
 
   ngOnInit(): void {
     
-    // gets secure info from server
     
-    // attach 'authorization token' header 
-    const token = this._tokenService.getToken()
-    const headers = new HttpHeaders().set('Authorization', token || "") // { headers }
+    console.log("MEMBER COMP INIT")
+    
+    // req secure data from server
 
-    // try to check/refresh token before sending token in header
-    if (!this._loginService.isLoggedIn() ) {
-      this._router.navigate(['/']);
-    }
+    const refreshToken = this._tokenService.getRefreshToken()
 
-    // get secure data from server
-    this._http.get(this._url + 'secure', { headers })
-    .subscribe( 
-      (data) => {this.data = data; console.log(data)}, 
-      (error) => {
-        console.log(error) 
-        // accessToken expired
-        
-      }
+    this._loginService.fetchToken(refreshToken)
+    .subscribe(
+    (data: any) => {
+      
+      // successful refresh
+      this._tokenService.saveToken(data.accessToken)
+
+      // add accesstoken for request
+      const headers = new HttpHeaders().set('Authorization', data.accessToken || "") // { headers }
+      
+      // retrieve secure data
+      this._http.get(this._url + 'secure', { headers })
+      .subscribe( 
+        (data) => {this.data = data}, 
+        (error) => {console.log(error);this._router.navigate(['/']);
+        });
+      },
+
+      // failed refresh
+    (error: any) => {console.log(error)}
     )
-  }
+}
 
   logout() {
     // send delete call to auth server that removes refresh token from database
-    console.log("log out");
+
     this._loginService.logoff(this._tokenService.getRefreshToken())
     .subscribe(
-      (_data: any) => {
+      () => {
         this._tokenService.signOut();
         this._router.navigate(['/']);
 

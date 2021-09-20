@@ -16,11 +16,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 })
 export class LoginFormComponent implements OnInit {
   userModel = new User('', '');
-  loggedIn = false;
+  loggedIn = this._loginService.loggedIn;
   displayEmsg = '';
-  // tokenservice
-  //tokenstorage.savetoken
-  //saverefresh
+
   constructor(
     private _loginService: LoginService, 
     private _tokenStorageService: TokenStorageService,
@@ -33,8 +31,8 @@ export class LoginFormComponent implements OnInit {
     .subscribe( params => {
       if (params.returnUrl)
         this.displayEmsg = "Please Login"
-      else 
-        this.displayEmsg = ""
+      else if (params.return)
+        this.displayEmsg = "Registeration Complete"
     })
   }
 

@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { LoginService } from '../services/login.service';
-import { User } from '../user';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-
 
 
 @Component({
   selector: 'app-register',
   templateUrl: './register.component.html',
   styles: [
+    'h1 {font-color: red}'
   ]
 })
 export class RegisterComponent implements OnInit {
@@ -20,7 +19,10 @@ export class RegisterComponent implements OnInit {
 
   }
 
-  constructor(private _loginService: LoginService) { }
+  displayEmsg = '';
+
+  constructor(private _loginService: LoginService,
+              private _router: Router) { }
 
   ngOnInit(): void {
   }
@@ -34,12 +36,13 @@ export class RegisterComponent implements OnInit {
     .subscribe(
       (data: any) => {
         console.log('Success', data)
+        this._router.navigate(['/'],  { queryParams: {return: "true"}});
 
-        
-        // save tokens and login
-      
       },
-      (error: any) => console.log('Error', error)
+      (error: any) => {
+        // username taken
+        this.displayEmsg = "Username Already Taken"
+        console.log('Error', error)}
     )
   }
 

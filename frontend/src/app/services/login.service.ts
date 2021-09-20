@@ -30,40 +30,12 @@ export class LoginService {
       return this._http.post('http://localhost:3000/api/register', user)
   }
 
-  token(token: any): any {
+  fetchToken(token: any): any {
     // send token to authServer to see if its still valid
     return this._http.post(this._url + 'token', {'token': token} )
   }
 
   setLoggedIn(value: boolean): void {
     this.loggedIn = value;
-  }
-
-  isLoggedIn(): boolean {
-    // checks if logged in by checking refreshToken 
-    // makes call to token api which returns a accesstoken
-    const token = this._token.getRefreshToken();
-    let newToken = ""
-    
-    this.token(token).subscribe( 
-    (data: any) => {
-      // valid token data returned
-      newToken = data.accessToken 
-
-      this.setLoggedIn(true);
-      this._token.saveToken(newToken)
-      
-      return true;
-    },
-    (error: any) => {
-      // no refreshToken, user not logged in
-      console.log(error);
-      
-      this.loggedIn = false;
-      
-      return false;
-    })
-    
-    return this.loggedIn;
   }
 }

@@ -10,33 +10,47 @@ import { TokenStorageService } from './services/token-storage.service';
 export class RouteGuard implements CanActivate {
   constructor(private _loginService: LoginService,
               private _tokenService: TokenStorageService,
-              private router: Router) {
-
-  }
+              private router: Router) {}
   canActivate(
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot,
     ): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
 
-      
-      // check if logged in
-      if (this._loginService.isLoggedIn())
+      // this._loginService.reqToken(this._tokenService.getToken)
+
+      if (this._loginService.loggedIn){
         return true;
+      } else {
+
+        var validated: boolean;
+        
+        // Observes server request for new login accesstoken given user's refresh token
+        return new Observable<boolean>( (observer) => {
+          setTimeout( () => {
+
+            // fetch accessToken with refreshToken
+            this._loginService.fetchToken(this._tokenService.getRefreshToken())
+            .subscribe(
+            (data: any) => {
+              
+              // successful refresh
+              validated = true;
+              this._tokenService.saveToken(data.accessToken)
+              this._loginService.setLoggedIn(true)
+              },
+            (error: any) => {
+              
+              // failed refresh
+              validated = false;
+              console.log("Invalid Access: ", error)
+              this.router.navigate(['/'], {queryParams: {returnUrl: state.url}});
+              })
+            observer.next(validated);
+            observer.complete()
+          
+          })
+        })
       
-      
-      // if not logged in, 
-      this.router.navigate(['/'], {queryParams: {returnUrl: state.url}});
-      return false;   
-  }
+      }
 }
-
-
-/*
-todo:
-protect secure page routing with an authgaurd 
-request protected resources from secure page to display (users)
-
-make refreshtokens useful
-make logout button make api/delete call
-
-*/
+}

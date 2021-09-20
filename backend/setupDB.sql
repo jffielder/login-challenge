@@ -1,5 +1,7 @@
 CREATE DATABASE challenge3;
 
+USE challenge3;
+
 CREATE TABLE refreshTokens (
     id INT AUTO_INCREMENT NOT NULL, 
     refreshToken VARCHAR(255) NOT NULL,
