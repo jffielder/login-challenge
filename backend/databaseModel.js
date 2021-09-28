@@ -1,4 +1,4 @@
-const mysql = require('mysql')
+const mysql = require('mysql2') // 'mysql' doesnt use the latest mysql_native_password method of auth
 
 
 class Database {

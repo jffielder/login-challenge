@@ -33,34 +33,29 @@ app.all('/', (req,res,next) => {
     next()
 })
 
-app.get('/api/getusers', (req, res) => {
-    // returns all users in db
-
-    db.query('select * from users;')
-    .then( rows => { res.status(202).json(rows) } )
-    .catch( err => { throw err;} )    
-})
-
 app.post('/api/register', (req, res) => {
     // Adds user to users table db
     const saltRounds = 5;
     var sql = "SELECT * FROM users where username = ?"
     
-    // Hash password before storing
+    // Hash password
     bcrypt.hash(req.body.password, saltRounds, (err, hash) => {
         
-        // check if user exists already
+        // check if user exists
         db.query( sql, [req.body.username])
         .then( rows => {
 
             if (rows == 0) { // new user
                 sql = "INSERT INTO users VALUE (?, ?)"
                 db.query(sql, [req.body.username, hash])       
-                res.status(202).json({message: "add successful"}) 
+                res.status(202).json({message: "registered successfully"}) 
             } 
-            else { // username already exists
+            else { // username exists
                 res.sendStatus(409)
             }
+        })
+        .catch( error => {
+            console.log("Error inserting into database", error);
         })
     });
 })
@@ -82,13 +77,16 @@ app.get('/api/secure', verifyToken, (req, res) => {
 function verifyToken(req, res, next) {
     // uses JWT verify to check if the accessToken is valid
 
-    const token = req.headers['authorization'];
-    // const token = bearerHeader && bearerHeader.split(' ')[1]
+    const bearerHeader = req.headers['authorization'];
+    const token = bearerHeader && bearerHeader.split(' ')[1]
 
     if (typeof token !== 'undefined') {
         jwt.verify(token, process.env.TOKEN_SECRET, (err, user) => {
 
-            if (err) return res.sendStatus(403); // bad token
+            if (err) {
+                console.log(err);
+                return res.sendStatus(403); // bad token
+            }
             req.user = user
             next()
         })

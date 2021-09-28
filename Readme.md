@@ -1,9 +1,12 @@
 # Setup
 
+## Database
+    sudo service mysql start
+    
+
 ## Backend
 
 ### start mysql: 
-    sudo service mysql start 
 
 ### import sql file
     cd backend

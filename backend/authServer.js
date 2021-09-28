@@ -26,12 +26,10 @@ var db = new Database( {
 
 app.delete('/api/logout', (req, res) => {
     // deletes token from db
-    console.log("logging out");
     const sql = "DELETE FROM refreshTokens WHERE refreshToken = ?"
     
     db.query(sql, req.headers.token )
     .then( rows => {
-        console.log("deleted token")
         res.status(200).json("deleted token");
     })
     .catch( error => {
@@ -72,8 +70,6 @@ app.post('/api/token', (req, res) => {
 app.post('/api/login', async (req, res) => {
     // returns tokens given valid username and password
 
-    console.log("Attempting to Login: " + req.body.username);
-
     const username = req.body.username 
     const user = { username: username}
 
@@ -113,13 +109,16 @@ app.post('/api/login', async (req, res) => {
                 throw err;
             }
         }
+    })
+    .catch( error => {
+        console.log("Error logging in", error);
     }) 
 });
 
 // Bearer token
 function genAccessToken(user) {
     // return access token for user
-    return jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: process.env.TOKEN_LIFE });
+    return jwt.sign(user, process.env.TOKEN_SECRET, { expiresIn: process.env.TOKEN_LIFE }); // used 10s for debug purposes
 }
 
 app.listen(3001, () => console.log('Starting authServer on port 3001')) 

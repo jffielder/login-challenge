@@ -1,5 +1,9 @@
 CREATE DATABASE challenge3;
 
+CREATE USER 'user1'@'localhost' IDENTIFIED BY '';
+GRANT ALL PRIVILEGES ON * . * TO 'user1'@'localhost';
+FLUSH PRIVILEGES;
+
 USE challenge3;
 
 CREATE TABLE refreshTokens (

@@ -36,22 +36,20 @@ export class MembersComponent implements OnInit {
 
   ngOnInit(): void {
     
-    
-    console.log("MEMBER COMP INIT")
-    
-    // req secure data from server
+    // Oninit, component requests secure data from server to be displayed
 
+    // skip checking current token exp, always send refresh for new token
     const refreshToken = this._tokenService.getRefreshToken()
 
     this._loginService.fetchToken(refreshToken)
     .subscribe(
-    (data: any) => {
+    (data: any) => { // successful refresh
       
-      // successful refresh
+      
       this._tokenService.saveToken(data.accessToken)
 
       // add accesstoken for request
-      const headers = new HttpHeaders().set('Authorization', data.accessToken || "") // { headers }
+      const headers = new HttpHeaders().set('Authorization', "Bearer " + data.accessToken || "")
       
       // retrieve secure data
       this._http.get(this._url + 'secure', { headers })
@@ -80,6 +78,5 @@ export class MembersComponent implements OnInit {
         console.log(error); 
       }
     )
-    // route to logout
   }
 }
